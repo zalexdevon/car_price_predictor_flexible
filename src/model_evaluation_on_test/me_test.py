@@ -36,30 +36,11 @@ def transform_test_data(test_data, correction_transformer, transformation_transf
 
 
 def evaluate_model_on_test(
-    test_features,
-    test_target,
-    model,
-    model_name,
-    model_index,
-    scoring,
-    root_dir,
+    test_features, test_target, model, model_evaluation_on_test_path
 ):
-    print(
-        f"\n========Bắt đầu đánh giá model index {model_name} - {model_index} !!!!!===================\n"
-    )
 
     final_model_results_text = "===========Kết quả đánh giá model ================\n"
-
-    ## Chỉ số scoring
-    test_score = myfuncs.evaluate_model_on_one_scoring_17(
-        model, test_features, test_target, scoring
-    )
-    final_model_results_text += f"====Chỉ số scoring====\n"
-    final_model_results_text += f"Test {scoring}: {test_score}\n"
-
-    # Các chỉ số khác: rmse + mae
-    final_model_results_text += "====Các chỉ số khác===========\n"
-    model_results_text, test_confusion_matrix = myclasses.RegressorEvaluator(
+    model_results_text = myclasses.RegressorEvaluator(
         model=model,
         train_feature_data=test_features,
         train_target_data=test_target,
@@ -67,5 +48,7 @@ def evaluate_model_on_test(
     final_model_results_text += model_results_text
 
     # Lưu vào file results.txt
-    with open(os.path.join(root_dir, "results.txt"), mode="w") as file:
-        file.write(model_results_text)
+    with open(
+        os.path.join(model_evaluation_on_test_path, "results.txt"), mode="w"
+    ) as file:
+        file.write(final_model_results_text)

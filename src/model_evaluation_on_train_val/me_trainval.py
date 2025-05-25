@@ -27,29 +27,19 @@ def evaluate_model_on_train_val(
     val_features,
     val_target,
     model,
-    model_name,
-    model_index,
     root_dir,
 ):
-    print(
-        f"\n========Bắt đầu đánh giá model index {model_name} - {model_index} !!!!!===================\n"
-    )
-
     final_model_results_text = (
         "===============Kết quả đánh giá model==================\n"
     )
-
-    # Đánh giá model trên tập train, val
-    model_results_text, train_confusion_matrix, val_confusion_matrix = (
-        myclasses.RegressorEvaluator(
-            model=model,
-            train_feature_data=train_features,
-            train_target_data=train_target,
-            val_feature_data=val_features,
-            val_target_data=val_target,
-        ).evaluate()
-    )
-    final_model_results_text += model_results_text  # Thêm đoạn đánh giá vào
+    model_results_text = myclasses.RegressorEvaluator(
+        model=model,
+        train_feature_data=train_features,
+        train_target_data=train_target,
+        val_feature_data=val_features,
+        val_target_data=val_target,
+    ).evaluate()
+    final_model_results_text += model_results_text
 
     # Lưu vào file results.txt
     with open(os.path.join(root_dir, "result.txt"), mode="w") as file:

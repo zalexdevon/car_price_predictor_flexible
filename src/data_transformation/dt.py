@@ -66,33 +66,30 @@ def create_data_transformation_transformer(
         ]
     )
 
-    column_transformer = ColumnTransformer(
-        transformers=[
-            ("feature", feature_pipeline, feature_cols),
-            ("target", "passthrough", [target_col]),
-        ]
+    feature_transformer = myclasses.NamedColumnTransformer(
+        ColumnTransformer(transformers=[("1", feature_pipeline, feature_cols)])
     )
 
-    transformation_transformer = myclasses.NamedColumnTransformer(column_transformer)
+    target_transformer = myclasses.NamedColumnTransformer(
+        ColumnTransformer(transformers=[("1", "passthrough", [target_col])])
+    )
 
-    return transformation_transformer
+    return feature_transformer, target_transformer
 
 
 def do_transform_data_in_data_transformation(
-    transformation_transformer,
+    feature_transformer,
+    target_transformer,
     df_train,
     df_val,
-    target_col,
     correction_transformer,
 ):
-    df_train_transformed = transformation_transformer.fit_transform(df_train)
-    df_train_feature = df_train_transformed.drop(columns=[target_col]).astype("float32")
-    df_train_target = df_train_transformed[target_col].astype("int8")
+    df_train_feature = feature_transformer.fit_transform(df_train).astype("float32")
+    df_train_target = target_transformer.fit_transform(df_train).astype("float32")
 
     df_val_corrected = correction_transformer.transform(df_val)
-    df_val_transformed = transformation_transformer.transform(df_val_corrected)
-    df_val_feature = df_val_transformed.drop(columns=[target_col]).astype("float32")
-    df_val_target = df_val_transformed[target_col].astype("int8")
+    df_val_feature = feature_transformer.transform(df_val_corrected).astype("float32")
+    df_val_target = target_transformer.transform(df_val_corrected).astype("float32")
 
     return df_train_feature, df_train_target, df_val_feature, df_val_target
 
@@ -138,32 +135,30 @@ def save_training_batches(
 
 def save_data_for_data_transformation(
     data_transformation_path,
-    transformation_transformer,
+    feature_transformer,
+    target_transformer,
     df_train_feature,
     df_train_target,
     df_val_feature,
     df_val_target,
 ):
     myfuncs.save_python_object(
-        os.path.join(data_transformation_path, "transformer.pkl"),
-        transformation_transformer,
-    )
-
-    myfuncs.save_python_object(
-        os.path.join(data_transformation_path, "train_features.pkl"),
-        df_train_feature,
+        f"{data_transformation_path}/feature_transformer.pkl", feature_transformer
     )
     myfuncs.save_python_object(
-        os.path.join(data_transformation_path, "train_target.pkl"),
-        df_train_target,
+        f"{data_transformation_path}/target_transformer.pkl", target_transformer
     )
     myfuncs.save_python_object(
-        os.path.join(data_transformation_path, "val_features.pkl"),
-        df_val_feature,
+        f"{data_transformation_path}/train_features.pkl", df_train_feature
     )
     myfuncs.save_python_object(
-        os.path.join(data_transformation_path, "val_target.pkl"),
-        df_val_target,
+        f"{data_transformation_path}/train_target.pkl", df_train_target
+    )
+    myfuncs.save_python_object(
+        f"{data_transformation_path}/val_features.pkl", df_val_feature
+    )
+    myfuncs.save_python_object(
+        f"{data_transformation_path}/val_target.pkl", df_val_target
     )
 
 
